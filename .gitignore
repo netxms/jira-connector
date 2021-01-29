@@ -1,0 +1,11 @@
+*~
+.#*
+.*.rej
+.*~
+.DS_Store
+pom.xml.versionsBackup
+*.swp
+language.settings.xml
+.project
+.idea
+target
