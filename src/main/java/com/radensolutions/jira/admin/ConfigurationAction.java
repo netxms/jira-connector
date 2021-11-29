@@ -23,6 +23,26 @@ public class ConfigurationAction extends JiraWebActionSupport {
 
     private boolean success;
 
+    public ConfigurationAction(SettingsManager settingsManager) {
+        this.settingsManager = settingsManager;
+        List<String> servers = settingsManager.getServers();
+        if (servers != null) {
+            switch (servers.size()) {
+                case 3:
+                    server3 = servers.get(2);
+                case 2:
+                    server2 = servers.get(1);
+                case 1:
+                    server1 = servers.get(0);
+            }
+        }
+        login = settingsManager.getLogin();
+        password = settingsManager.getPassword();
+        enabled = settingsManager.isEnabled() ? "on" : "off";
+        projectKey = settingsManager.getProjectKey();
+        jiraAccount = settingsManager.getJiraAccount();
+    }
+
     public String getLogin() {
         return login;
     }
@@ -75,10 +95,6 @@ public class ConfigurationAction extends JiraWebActionSupport {
         this.forced = forced;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
     public String getProjectKey() {
         return projectKey;
     }
@@ -93,26 +109,6 @@ public class ConfigurationAction extends JiraWebActionSupport {
 
     public void setJiraAccount(String jiraAccount) {
         this.jiraAccount = jiraAccount;
-    }
-
-    public ConfigurationAction(SettingsManager settingsManager) {
-        this.settingsManager = settingsManager;
-        List<String> servers = settingsManager.getServers();
-        if (servers != null) {
-            switch (servers.size()) {
-                case 3:
-                    server3 = servers.get(2);
-                case 2:
-                    server2 = servers.get(1);
-                case 1:
-                    server1 = servers.get(0);
-            }
-        }
-        login = settingsManager.getLogin();
-        password = settingsManager.getPassword();
-        enabled = settingsManager.isEnabled() ? "on" : "off";
-        projectKey = settingsManager.getProjectKey();
-        jiraAccount = settingsManager.getJiraAccount();
     }
 
     @Override
@@ -147,8 +143,9 @@ public class ConfigurationAction extends JiraWebActionSupport {
 
     private void checkConnection(String server) {
         if (!server.isEmpty()) {
+            String decryptedPassword = this.settingsManager.decryptPassword(login, password);
             StringBuffer error = new StringBuffer();
-            if (!new NetxmsConnector(null).testConnection(server, login, password, error)) {
+            if (!new NetxmsConnector(null).testConnection(server, login, decryptedPassword, error)) {
                 addErrorMessage("Connection attempt to " + server + " failed: " + error.toString());
             }
         }
@@ -180,5 +177,9 @@ public class ConfigurationAction extends JiraWebActionSupport {
     @SuppressWarnings("UnusedDeclaration")
     public boolean isSuccess() {
         return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
 }

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.netxms</groupId>
     <artifactId>netxms-jira-connector</artifactId>
-    <version>4.0</version>
+    <version>3.9.229</version>
 
     <organization>
         <name>Raden Solutions</name>
@@ -72,6 +72,7 @@
                     <productVersion>${jira.version}</productVersion>
                     <productDataVersion>${jira.version}</productDataVersion>
                     <allowGoogleTracking>false</allowGoogleTracking>
+                    <enableQuickReload>true</enableQuickReload>
                 </configuration>
             </plugin>
         </plugins>

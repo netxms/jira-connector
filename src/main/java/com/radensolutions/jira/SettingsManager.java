@@ -26,4 +26,6 @@ public interface SettingsManager {
     String getJiraAccount();
 
     void setJiraAccount(String name);
+
+    String decryptPassword(String login, String encryptedPassword);
 }

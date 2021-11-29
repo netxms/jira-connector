@@ -3,7 +3,9 @@ package com.radensolutions.jira;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 public class SettingsManagerImpl implements SettingsManager {
@@ -49,7 +51,9 @@ public class SettingsManagerImpl implements SettingsManager {
     @Override
     public String getPassword() {
         PluginSettings globalSettings = pluginSettingsFactory.createGlobalSettings();
-        return (String) globalSettings.get(KEY_PASSWORD);
+        String login = (String) globalSettings.get(KEY_LOGIN);
+        String password = (String) globalSettings.get(KEY_PASSWORD);
+        return decryptPassword(login, password);
     }
 
     @Override
@@ -93,5 +97,42 @@ public class SettingsManagerImpl implements SettingsManager {
     public void setJiraAccount(String jiraAccount) {
         PluginSettings globalSettings = pluginSettingsFactory.createGlobalSettings();
         globalSettings.put(KEY_JIRA_ACCOUNT, jiraAccount);
+    }
+
+    @Override
+    public String decryptPassword(String login, String obfuscatedPassword) {
+        if (obfuscatedPassword.length() == 44 || obfuscatedPassword.length() == 88) {
+            // might be ICE-obfuscated
+            try {
+                byte[] rawObfuscatedPassword = Base64.getDecoder().decode(obfuscatedPassword);
+
+                MessageDigest md5 = MessageDigest.getInstance("MD5");
+                md5.update(login.getBytes());
+                byte[] key = md5.digest();
+
+                IceKey ice = new IceKey(1);
+                ice.set(key);
+
+                byte[] decrypted = new byte[rawObfuscatedPassword.length];
+                byte[] buffer = new byte[8];
+                byte[] outBuffer = new byte[8];
+                for (int i = 0; i < rawObfuscatedPassword.length / 8; i++) {
+                    System.arraycopy(rawObfuscatedPassword, i * 8, buffer, 0, 8);
+                    ice.decrypt(buffer, outBuffer);
+                    System.arraycopy(outBuffer, 0, decrypted, i * 8, 8);
+                }
+                StringBuilder sb = new StringBuilder();
+                for (byte b : decrypted) {
+                    if (b == 0) {
+                        break;
+                    }
+                    sb.append((char) b);
+                }
+                return sb.toString();
+            } catch (Exception e) {
+                // ignore all errors, use password as is
+            }
+        }
+        return obfuscatedPassword;
     }
 }
