@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.netxms</groupId>
     <artifactId>netxms-jira-connector</artifactId>
-    <version>3.9.229</version>
+    <version>3.9</version>
 
     <organization>
         <name>Raden Solutions</name>
@@ -20,7 +20,7 @@
     </properties>
 
     <name>netxms-jira-connector</name>
-    <description>NetXMS connector plugin.</description>
+    <description>NetXMS connector plugin for Jira</description>
     <packaging>atlassian-plugin</packaging>
 
     <dependencies>
